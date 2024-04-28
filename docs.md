@@ -61,4 +61,30 @@ userId: {
 
 and if you save whole object with key 'userId', it only save the ObjectId, not the whole obj, for the convenient
 
+# One Important Thing About Fetching Relations
+- like if we want the object
+
+exports.getProducts = (req, res, next) => {
+  Product.find()
+    // you could also select and exclude a specific field, for main document
+    .select('title price -_id')
+
+    // for related document
+    // path to the key which you want to populate the whole obj, it could be like that, userId.anotherId.id
+    // and the second param define which key you only want to populate like just name
+    // if you don't pass anything it retrieve the whole object
+    // for excluding like _id
+
+    .populate('userId', 'name -_id')
+
+    .then(products => {
+      res.render('admin/products', {
+        prods: products,
+        pageTitle: 'Admin Products',
+        path: '/admin/products'
+      });
+    })
+    .catch(err => console.log(err));
+};
+
 # 
