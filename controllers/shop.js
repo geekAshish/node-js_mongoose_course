@@ -44,8 +44,10 @@ exports.getIndex = (req, res, next) => {
 
 exports.getCart = (req, res, next) => {
   req.user
-    .getCart()
-    .then(products => {
+    .populate('cart.items.productId')// populate doesn't return a promise, so we'll get an error
+    .execPopulate() // to not get error, we'll use execPopulate, which will return a promise
+    .then(user => {
+      const products = user.cart.items;
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
@@ -57,8 +59,10 @@ exports.getCart = (req, res, next) => {
 
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
+  // findById is mongoose method
   Product.findById(prodId)
     .then(product => {
+      // addToCart, we created it in the user model
       return req.user.addToCart(product);
     })
     .then(result => {

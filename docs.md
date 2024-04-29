@@ -87,4 +87,27 @@ exports.getProducts = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-# 
+# Working on the Shopping Cart
+- you can add your own methods in the Model, in schema, Instance Method
+- https://mongoosejs.com/docs/guide.html#methods
+
+# Loading the Cart
+exports.getCart = (req, res, next) => {
+  req.user
+    .populate('cart.items.productId')// populate doesn't return a promise, so we'll get an error
+    .execPopulate() // to not get error, we'll use execPopulate, which will return a promise
+    .then(user => {
+      const products = user.cart.items;
+      res.render('shop/cart', {
+        path: '/cart',
+        pageTitle: 'Your Cart',
+        products: products
+      });
+    })
+    .catch(err => console.log(err));
+};
+
+
+# Deleting Cart Items
+
+
