@@ -1,3 +1,4 @@
+const Order = require('../models/order');
 const Product = require('../models/product');
 
 exports.getProducts = (req, res, next) => {
@@ -82,18 +83,41 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.postOrder = (req, res, next) => {
-  let fetchedCart;
   req.user
-    .addOrder()
+    .populate('cart.items.productId')// populate doesn't return a promise, so we'll get an error
+    .execPopulate() // to not get error, we'll use execPopulate, which will return a promise
+    .then(user => {
+      const products = user.cart.items?.map((item) => {
+        return {
+          quantity: item.quantity,
+          // product: item.productId, // it'll only save the ObjectId()
+          product: {...item.productId._doc } // _doc is provided by mongoose to only save the object data
+        }
+      })
+
+      const order = new Order({
+        user: {
+          name: req.user.name,
+          userId: req.user, // mongoose will automatic picks only ObjectId()
+        },
+        products: products,
+      });
+
+      return order.save();
+    })
     .then(result => {
+      return req.user.clearCart();
+    })
+    .then(() => {
       res.redirect('/orders');
     })
     .catch(err => console.log(err));
 };
 
 exports.getOrders = (req, res, next) => {
-  req.user
-    .getOrders()
+  // finding the order data for the logged in user
+  Order
+    .find({'user.userId': req.user._Id})
     .then(orders => {
       res.render('shop/orders', {
         path: '/orders',

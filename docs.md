@@ -110,4 +110,7 @@ exports.getCart = (req, res, next) => {
 
 # Deleting Cart Items
 
+# Creating & Getting Orders
+
+# Getting & Displaying the Orders
 
